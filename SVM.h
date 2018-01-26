@@ -19,7 +19,9 @@ namespace NN {
 		}
 
 		void fit(const CMatrix& X, const CMatrix& y, int iterations);
-		double predict(const CMatrix& X);
+		double get_margin();
+		double get_l2();
+		CMatrix predict(const CMatrix& X);
 
 	public:
 		void initialize_distribution(int max);

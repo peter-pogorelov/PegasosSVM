@@ -15,10 +15,6 @@ namespace NN {
 			auto& x_i = X_const.vertical_slice(r_i, r_i).transpose();
 			double y_i = y[0][r_i];
 
-			if (t % 10) {
-				std::cout << cur_norm.to_string() << std::endl;
-			}
-
 			double prediction = y_i * x_i.dot(cur_norm)[0][0];
 			if (prediction < 1) {
 				cur_norm = (cur_norm*(1 - etha * penalty)) + (x_i*y_i*etha).transpose();
@@ -31,12 +27,47 @@ namespace NN {
 		this->norm = std::make_shared<CMatrix>(cur_norm);
 	}
 
-	double SVM::predict(const CMatrix& X) {
-		return 0;
+
+	CMatrix SVM::predict(const CMatrix& X) {
+		if (this->norm == nullptr) {
+			throw std::string("first train the model via SVM::fit method.");
+		}
+
+		auto& X_const = this->add_constant(X);
+		auto& predicted = X_const.transpose().dot(*this->norm);
+		double margin = this->get_margin();
+
+		for (int i = 0; i < predicted.nrow; ++i) {
+			if (std::abs(predicted[i][0]) < margin / 2) {
+				predicted[i][0] = 0;
+			}
+			else if(predicted[0][i] < 0){
+				predicted[i][0] = -1;
+			}
+			else {
+				predicted[i][0] = 1;
+			}
+		}
+
+		return predicted;
 	}
 
 	void SVM::initialize_distribution(int max) {
 		this->distr = std::uniform_int_distribution<int>(0, max);
+	}
+
+	double SVM::get_margin() {
+		return 2. / this->get_l2();
+	}
+
+	double SVM::get_l2() {
+		double result = 0;
+		for (int i = 0; i < this->norm->ncol; ++i)
+		{
+			result += std::pow((*this->norm)[0][i], 2);
+		}
+
+		return std::sqrt(result);
 	}
 
 	CMatrix SVM::add_constant(const CMatrix& m, double c_value) {
