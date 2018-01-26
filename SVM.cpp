@@ -38,10 +38,12 @@ namespace NN {
 		double margin = this->get_margin();
 
 		for (int i = 0; i < predicted.nrow; ++i) {
-			if (std::abs(predicted[i][0]) < margin / 2) {
+			double pred = predicted[i][0];
+
+			if (std::abs(pred) < margin / 2) {
 				predicted[i][0] = 0;
 			}
-			else if(predicted[0][i] < 0){
+			else if(pred < 0.){
 				predicted[i][0] = -1;
 			}
 			else {
